@@ -4,6 +4,6 @@
   "version": "v1.0.3",
   "documentation": "https://github.com/Bram-diederik/home-assistant-libvirt-integration/blob/main/README.md",
   "requirements": [],
-  "codeowners": ["@bram-diederik"],
+  "codeowners": [],
   "iot_class": "local_polling"
 }
