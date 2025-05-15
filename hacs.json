@@ -1,6 +1,6 @@
 {
   "name": "Libvirt Integration",
-  "content_in_root": false,
+  "content_in_root": true,
   "domain": "libvirt",
   "domain_name": "Libvirt Integration",
   "repository": "https://github.com/Bram-diederik/home-assistant-libvirt-integration",
