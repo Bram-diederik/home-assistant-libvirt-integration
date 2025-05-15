@@ -87,5 +87,35 @@ entities:
         - font-size: 12px
         - height: 30px
         - width: 220px
+```
 
+house keeping automation
+```
+alias: libvirt screenshots and snapshots
+description: make libvirt screenshots and manage the snapshots.
+triggers:
+  - minutes: /3
+    trigger: time_pattern
+conditions: []
+actions:
+  - if:
+      - condition: state
+        entity_id: sensor.libvirt_alfred
+        state: running
+    then:
+      - data:
+          name: alfred
+        action: libvirt_vms.take_screenshot
+      - action: input_select.set_options
+        metadata: {}
+        data:
+          options: |-
+            {{
+              (state_attr('sensor.libvirt_alfred', 'snapshots') 
+              | default([]) 
+              | map(attribute='name') 
+              | list)
+              or ['None'] }}
+        target:
+          entity_id: input_select.libvirt_alfred
 ```
