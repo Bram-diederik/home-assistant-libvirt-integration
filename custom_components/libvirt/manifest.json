@@ -1,7 +1,7 @@
 {
   "domain": "libvirt",
   "name": "Libvirt Integration",
-  "version": "v1.0.3",
+  "version": "1.0.3",
   "documentation": "https://github.com/Bram-diederik/home-assistant-libvirt-integration/blob/main/README.md",
   "requirements": [],
   "codeowners": ["@bram-diederik"],
