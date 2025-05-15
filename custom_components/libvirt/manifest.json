@@ -1,9 +1,9 @@
 {
-  "domain": "libvirt_sensor",
-  "name": "Libvirt Sensor",
-  "version": "1.0.1",
+  "domain": "libvirt",
+  "name": "Libvirt Integration",
+  "version": "1.0.2",
   "documentation": "https://github.com/Bram-diederik/home-assistant-libvirt-integration/blob/main/README.md",
-  "dependencies": [],
-  "codeowners": [],
-  "requirements": []
+  "requirements": [],
+  "codeowners": ["@bram-diederik"],
+  "iot_class": "local_polling"
 }

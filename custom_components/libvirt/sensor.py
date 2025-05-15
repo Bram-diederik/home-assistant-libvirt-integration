@@ -55,6 +55,8 @@ class LibvirtVMSensor(Entity):
                 "ip": ip,
                 "interfaces": interfaces,
                 "snapshots": snapshots,
+                "ssh_host":  self._ssh_host,
+                "uri" : self._url,
             }
 
         except Exception as e:
