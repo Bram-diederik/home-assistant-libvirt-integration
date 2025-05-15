@@ -1,9 +1,10 @@
 {
   "name": "Libvirt Integration",
-  "content_in_root": true,
+  "content_in_root": false,
   "domain": "libvirt",
   "domain_name": "Libvirt Integration",
   "repository": "https://github.com/Bram-diederik/home-assistant-libvirt-integration",
   "file_type": "integration",
   "keywords": ["libvirt", "virtual machines", "vm", "kvm", "qemu"]
+  "filename": "custom_components/libvirt/manifest.json",
 }
