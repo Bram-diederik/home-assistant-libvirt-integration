@@ -1,0 +1,72 @@
+start_vm:
+  name: Start VM
+  description: Start a virtual machine by name.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+
+shutdown_vm:
+  name: Shutdown VM
+  description: Shut down a virtual machine by name.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+
+suspend_vm:
+  name: Suspend VM
+  description: Suspend a virtual machine by name.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+
+resume_vm:
+  name: Resume VM
+  description: Resume a suspended virtual machine.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+
+create_snapshot:
+  name: Create Snapshot
+  description: Create a snapshot for a virtual machine. If no snapshot name is provided, one will be generated.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+    snapshot:
+      description: Optional name of the snapshot.
+      example: pre-upgrade
+
+revert_snapshot:
+  name: Revert Snapshot
+  description: Revert a virtual machine to a specified snapshot.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+    snapshot:
+      description: Name of the snapshot to revert to.
+      example: pre-upgrade
+
+delete_snapshot:
+  name: Delete Snapshot
+  description: Delete a snapshot from a virtual machine.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm
+    snapshot:
+      description: Name of the snapshot to delete.
+      example: pre-upgrade
+
+take_screenshot:
+  name: Take Screenshot
+  description: Take a screenshot of the virtual machine's screen and save it to /config/www/libvirt.
+  fields:
+    name:
+      description: Name of the virtual machine.
+      example: debian_vm

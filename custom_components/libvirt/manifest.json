@@ -1,0 +1,9 @@
+{
+  "domain": "libvirt_sensor",
+  "name": "Libvirt Sensor",
+  "version": "1.0.0",
+  "documentation": "https://github.com/Bram-diederik/home-assistant-libvirt-integration/blob/main/README.md",
+  "dependencies": [],
+  "codeowners": [],
+  "requirements": []
+}
