@@ -32,13 +32,13 @@ ssh-copy-id this key
 
 ```
 sensor:
-  - platform: libvirt_sensor
+  - platform: libvirt
     uri: qemu://system
     ssh_host: "user@linux_host"
     include_interfaces: true
 
 switch:
-  - platform: libvirt_sensor
+  - platform: libvirt
     uri: "qemu://system"
     ssh_host: "user@linux_host"
 ```
@@ -61,7 +61,7 @@ entities:
     icon: mdi:backup-restore
     tap_action:
       action: call-service
-      service: libvirt_sensor.revert_snapshot
+      service: libvirt.revert_snapshot
       service_data:
         name: kali
         snapshot: "[[[ return states[\"input_select.libvirt_kali\"].state ]]]"
@@ -77,7 +77,7 @@ entities:
     icon: mdi:camera
     tap_action:
       action: call-service
-      service: libvirt_sensor.create_snapshot
+      service: libvirt.create_snapshot
       service_data:
         name: kali
         snapshot: "[[[ return states[\"input_text.libvirt_kali\"].state ]]]"
@@ -105,7 +105,7 @@ actions:
     then:
       - data:
           name: alfred
-        action: libvirt_sensor.take_screenshot
+        action: libvirt.take_screenshot
       - action: input_select.set_options
         metadata: {}
         data:
