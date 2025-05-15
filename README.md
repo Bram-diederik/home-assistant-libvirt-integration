@@ -17,7 +17,7 @@ This is a custom integration for Home Assistant to monitor and control virtual m
 1. Add this repository to HACS as a custom integration:
    - URL: `https://github.com/Bram-diederik/home-assistant-libvirt-integration`
 2. Reboot Home Assistant.
-3. Add the integration via the UI or YAML.
+3. Add the integration via YAML.
 
 ## SSH Key Setup
 
