@@ -4,7 +4,7 @@ import subprocess
 import logging
 import base64
 
-DOMAIN = "libvirt_vms"
+DOMAIN = "libvirt"
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup(hass, config):
