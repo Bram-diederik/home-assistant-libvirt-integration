@@ -30,12 +30,16 @@ ssh-copy-id this key
 
 ## config setup
 
+If no vms is selected all vms are used.
 ```
 sensor:
   - platform: libvirt
     uri: qemu://system
     ssh_host: "user@linux_host"
     include_interfaces: true
+    vms:
+    - debian
+    - kali
 
 switch:
   - platform: libvirt

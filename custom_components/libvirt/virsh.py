@@ -3,6 +3,8 @@ import subprocess
 import logging
 import re
 import time
+import base64
+import shutil
 
 
 __all__ = ["get_vm_info", "get_all_vms", "run_virsh", "get_vm_ip", "get_vm_interfaces", "list_snapshots","get_vm_state","start_vm","shutdown_vm","unpause_vm","update_vm_cpu_load"]
@@ -12,6 +14,60 @@ SSH_WRAPPER = "/share/libvirt/ssh-wrapper"
 SSH_WRAPPER_PATH = "/share/libvirt/"
 DEFAULT_SSH_HOST = "root@localhost"
 DEFAULT_URI = "qemu:///system"
+
+def take_screenshot(vm_name, ssh_host, local_path):
+    ensure_ssh_wrapper()
+
+    remote_ppm = f"/tmp/{vm_name}.ppm"
+    remote_png = f"/tmp/{vm_name}.png"
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+    # Step 1: Try taking the screenshot
+    try:
+        result = run_virsh(["screenshot", vm_name, remote_ppm, "--screen", "0"], ssh_host=ssh_host)
+        if result is None:
+            raise RuntimeError("VM might be offline or screenshot failed.")
+    except Exception:
+        # Step 1 fallback: offline image
+        fallback = os.path.join(os.path.dirname(__file__), "offline.png")
+        try:
+            shutil.copyfile(fallback, local_path)
+        except Exception as e:
+            _LOGGER.error(f"Error copying fallback image: {e}")
+        return False
+
+    # Step 2: Convert PPM to PNG
+    try:
+        convert_cmd = f"convert {remote_ppm} {remote_png}"
+        subprocess.run([SSH_WRAPPER, ssh_host, convert_cmd], check=True)
+    except subprocess.CalledProcessError as e:
+        _LOGGER.error(f"Failed to convert screenshot to PNG: {e.stderr}")
+        return False
+    except Exception as e:
+        _LOGGER.error(f"Unexpected error during conversion: {e}")
+        return False
+
+    # Step 3: Fetch and decode
+    try:
+        cmd = [SSH_WRAPPER, ssh_host, f"base64 {remote_png}"]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        result.check_returncode()
+    except subprocess.CalledProcessError as e:
+        _LOGGER.error(f"Failed to base64 encode screenshot: {e.stderr}")
+        return False
+    except Exception as e:
+        _LOGGER.error(f"Unexpected error: {e}")
+        return False
+
+    try:
+        with open(local_path, "wb") as f:
+            f.write(base64.b64decode(result.stdout))
+    except Exception as e:
+        _LOGGER.error(f"Failed to write screenshot to {local_path}: {e}")
+        return False
+
+    return True
+
 
 
 def is_vm_running(vm_name, ssh_host=None, uri=None):
@@ -49,11 +105,6 @@ def ensure_ssh_wrapper():
 def run_virsh(args, ssh_host=DEFAULT_SSH_HOST, uri=DEFAULT_URI):
     ensure_ssh_wrapper()
 
-    # Sanity fallback if ssh_host is accidentally empty or unset
-    if not ssh_host or ssh_host == "root@localhost":
-        _LOGGER.warning("Invalid or fallback ssh_host detected, skipping virsh command to avoid using root@localhost.")
-        raise RuntimeError("Invalid SSH host. Expected something like 'daft@192.168.5.253'.")
-
     try:
         cmd = [SSH_WRAPPER, ssh_host, "virsh", "-c", "qemu:///system"] + args
 
@@ -65,13 +116,11 @@ def run_virsh(args, ssh_host=DEFAULT_SSH_HOST, uri=DEFAULT_URI):
         )
 
         if result.returncode != 0:
-            _LOGGER.error(f"virsh error ({args}): {result.stderr.strip()}")
             raise subprocess.CalledProcessError(result.returncode, result.args, output=result.stdout, stderr=result.stderr)
 
         return result.stdout.strip()
 
     except Exception as e:
-        _LOGGER.error(f"virsh command failed: {args}: {e}")
         raise
 
 def get_all_vms(ssh_host=DEFAULT_SSH_HOST, uri=DEFAULT_URI):

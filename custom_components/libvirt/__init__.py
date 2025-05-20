@@ -1,8 +1,8 @@
-from .virsh import ensure_ssh_wrapper, SSH_WRAPPER, run_virsh, is_vm_running, DEFAULT_URI
+from .virsh import ensure_ssh_wrapper, SSH_WRAPPER, run_virsh, is_vm_running, DEFAULT_URI, take_screenshot
 import os
 import subprocess
 import logging
-import base64
+
 
 DOMAIN = "libvirt"
 _LOGGER = logging.getLogger(__name__)
@@ -37,7 +37,8 @@ async def async_setup(hass, config):
             raise RuntimeError(f"No SSH host configured for VM: {vm_name}")
         return vm_data["ssh_host"]
 
-    # Service handlers
+
+
     async def handle_vm_screenshot(call):
         name = call.data["name"]
         try:
@@ -45,67 +46,31 @@ async def async_setup(hass, config):
         except RuntimeError:
             return
 
-        remote_ppm = f"/tmp/{name}.ppm"
-        remote_png = f"/tmp/{name}.png"
         local_path = f"/config/www/libvirt/{name}.png"
-        os.makedirs("/config/www/libvirt", exist_ok=True)
-
-        # Take screenshot in PPM format
-        run_virsh(["screenshot", name, remote_ppm, "--screen", "0"], ssh_host=ssh_host)
-
-        # Convert to PNG on the remote server
-        try:
-            convert_cmd = f"convert {remote_ppm} {remote_png}"
-            subprocess.run([SSH_WRAPPER, ssh_host, convert_cmd], check=True)
-        except subprocess.CalledProcessError as e:
-            _LOGGER.error(f"Failed to convert screenshot to PNG: {e.stderr}")
-            return
-        except Exception as e:
-            _LOGGER.error(f"Unexpected error during conversion: {e}")
-            return
-
-        # Fetch and decode the PNG
-        try:
-            cmd = [SSH_WRAPPER, ssh_host, f"base64 {remote_png}"]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-            result.check_returncode()
-        except subprocess.CalledProcessError as e:
-            _LOGGER.error(f"Failed to base64 encode screenshot: {e.stderr}")
-            return
-        except Exception as e:
-            _LOGGER.error(f"Unexpected error: {e}")
-            return
-
-        b64_data = result.stdout
-        try:
-            with open(local_path, "wb") as f:
-                f.write(base64.b64decode(b64_data))
-        except Exception as e:
-            _LOGGER.error(f"Failed to write screenshot to {local_path}: {e}")
-            return
-
-        _LOGGER.info(f"Saved screenshot to {local_path}")
+        success = take_screenshot(name, ssh_host, local_path)
+        if not success:
+            _LOGGER.error(f"Failed to take screenshot for {name}")
 
 
     async def handle_start_vm(call):
         name = call.data["name"]
         ssh_host = get_ssh_host(name)
         run_virsh(["start", name], ssh_host=ssh_host)
-
+ 
     async def handle_shutdown_vm(call):
         name = call.data["name"]
         ssh_host = get_ssh_host(name)
         run_virsh(["shutdown", name], ssh_host=ssh_host)
 
     async def handle_suspend_vm(call):
-        name = call.data["name"]
-        ssh_host = get_ssh_host(name)
-        run_virsh(["suspend", name], ssh_host=ssh_host)
+       name = call.data["name"]
+       ssh_host = get_ssh_host(name)
+       run_virsh(["suspend", name], ssh_host=ssh_host)
 
     async def handle_resume_vm(call):
-        name = call.data["name"]
-        ssh_host = get_ssh_host(name)
-        run_virsh(["resume", name], ssh_host=ssh_host)
+       name = call.data["name"]
+       ssh_host = get_ssh_host(name)
+       run_virsh(["resume", name], ssh_host=ssh_host)
 
     async def handle_create_snapshot(call):
         name = call.data["name"]
