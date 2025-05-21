@@ -1,6 +1,9 @@
 # Home Assistant Libvirt Integration
 
 This is a custom integration for Home Assistant to monitor and control virtual machines using `virsh` over SSH.
+Yeah SSH because the libvirt python libaries dont compile under HAOS. 
+note: you might increase the sshd MaxStartups if using lots of ssh connections on your home assistant system to one linux system. 
+
 
 ![Screenshot of dashboard](images/libvirt.png)
 
@@ -49,6 +52,9 @@ switch:
 
 
 ## Dashboard example
+
+note: create a text helper and a select helper for the snapshots.
+
 
 ```
 type: entities
@@ -102,24 +108,19 @@ triggers:
     trigger: time_pattern
 conditions: []
 actions:
-  - if:
-      - condition: state
-        entity_id: sensor.libvirt_alfred
-        state: running
-    then:
       - data:
-          name: alfred
+          name: kali
         action: libvirt.take_screenshot
       - action: input_select.set_options
         metadata: {}
         data:
           options: |-
             {{
-              (state_attr('sensor.libvirt_alfred', 'snapshots') 
+              (state_attr('sensor.libvirt_kali', 'snapshots') 
               | default([]) 
               | map(attribute='name') 
               | list)
               or ['None'] }}
         target:
-          entity_id: input_select.libvirt_alfred
+          entity_id: input_select.libvirt_kali
 ```
