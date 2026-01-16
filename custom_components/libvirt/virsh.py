@@ -145,7 +145,7 @@ def run_virsh(args, ssh_host=DEFAULT_SSH_HOST, uri=DEFAULT_URI):
     try:
         # The ssh_host can now be in format: user@host:port or user@host
         # The wrapper script handles the port extraction
-        cmd = [SSH_WRAPPER, ssh_host, "virsh", "-c", uri] + args  # Note: using uri parameter instead of hardcoded "qemu:///system"
+        cmd = [SSH_WRAPPER, ssh_host, "virsh", "-c", "qemu:///system"] + args  # Note: using uri parameter instead of hardcoded "qemu:///system"
 
         result = subprocess.run(
             cmd,
