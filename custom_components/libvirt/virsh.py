@@ -98,15 +98,54 @@ def ensure_ssh_wrapper():
     os.makedirs(os.path.dirname(SSH_WRAPPER_PATH), exist_ok=True)
     if not os.path.exists(SSH_WRAPPER):
         with open(SSH_WRAPPER, "w") as f:
-            f.write("#!/bin/sh\n")
-            f.write("exec /usr/bin/ssh -o StrictHostKeyChecking=accept-new -i /share/libvirt/ssh_key \"$@\"\n")
+            f.write("""#!/bin/bash
+# SSH wrapper that handles optional port with IPv6 support
+host="$1"
+shift
+
+# Function to parse host and port
+parse_host_port() {
+    local input="$1"
+    
+    # IPv6 with brackets and port: user@[2001:db8::1]:2222
+    if [[ "$input" =~ ^([^@]+@\[.*\]):([0-9]+)$ ]]; then
+        echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}"
+        return 0
+    fi
+    
+    # IPv4/hostname with port: user@host:2222 or root@192.168.1.100:2222
+    # But NOT IPv6 without brackets: 2001:db8::1 (would be misinterpreted)
+    if [[ "$input" =~ ^([^:]+:[^:]+@[^:]+):([0-9]+)$ ]] || \
+       [[ "$input" =~ ^([^@]+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+):([0-9]+)$ ]]; then
+        echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}"
+        return 0
+    fi
+    
+    # No port specified
+    echo "$input"
+    return 0
+}
+
+# Parse host and port
+result=$(parse_host_port "$host")
+read -r hostname port <<< "$result"
+
+if [ -n "$port" ]; then
+    exec /usr/bin/ssh -o StrictHostKeyChecking=accept-new -i /share/libvirt/ssh_key -p "$port" "$hostname" "$@"
+else
+    exec /usr/bin/ssh -o StrictHostKeyChecking=accept-new -i /share/libvirt/ssh_key "$hostname" "$@"
+fi
+""")
         os.chmod(SSH_WRAPPER, 0o755)
+
 
 def run_virsh(args, ssh_host=DEFAULT_SSH_HOST, uri=DEFAULT_URI):
     ensure_ssh_wrapper()
-
+    
     try:
-        cmd = [SSH_WRAPPER, ssh_host, "virsh", "-c", "qemu:///system"] + args
+        # The ssh_host can now be in format: user@host:port or user@host
+        # The wrapper script handles the port extraction
+        cmd = [SSH_WRAPPER, ssh_host, "virsh", "-c", uri] + args  # Note: using uri parameter instead of hardcoded "qemu:///system"
 
         result = subprocess.run(
             cmd,
